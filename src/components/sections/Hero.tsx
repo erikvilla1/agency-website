@@ -111,12 +111,7 @@ export default function Hero() {
                 >
                   Book a Consultation
                 </Link>
-                <Link
-                  to="/#work"
-                  className="inline-flex items-center justify-center rounded-lg border border-white/15 bg-white/5 px-7 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-200 hover:border-white/30 hover:bg-white/10"
-                >
-                  See Our Work
-                </Link>
+                {/* "See Our Work" hidden until we have real client work to show */}
               </div>
             </div>
 

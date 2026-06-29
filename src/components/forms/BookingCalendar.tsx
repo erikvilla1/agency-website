@@ -1,6 +1,23 @@
 import { useState, useMemo, useEffect, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
-import { createAppointment } from '../../lib/api'
+import { createAppointment, finalizeIntake } from '../../lib/api'
+
+// ─── Intake questions shown on the booking form (Step 1 + Step 2) ─────────────
+const LOCATION_OPTIONS = [
+  'Locally within Hawaii',
+  'US Mainland / Out-of-State',
+  'Both Local & Mainland',
+]
+const SERVICE_OPTIONS = [
+  'Shopify E-Commerce',
+  'Web Design & Maintenance',
+  'Meta (FB/IG) Ad Campaigns',
+  'Content Creation & Brand Photography',
+]
+const BRANDING_OPTIONS = [
+  'Yes, fully ready',
+  'No, we need the agency to produce them',
+]
+// const BUDGET_OPTIONS = ['Under $1,000', '$1,000 - $5,000', '$5,000 - $10,000', '$10,000+']  // hidden for now
 
 // ─── Availability (Pacific Time) ──────────────────────────────────────────────
 const WEEKDAY_SLOTS = buildSlots(20, 23)   // Mon–Fri  8:00 pm – 10:30 pm PT
@@ -90,9 +107,21 @@ export default function BookingCalendar() {
 
   const [name,  setName]  = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
+  // Step 1 (Foundation) + Step 2 (Ecosystem) answers, captured at booking time.
+  const [company,   setCompany]   = useState('')
+  const [website,   setWebsite]   = useState('')
+  const [audience,  setAudience]  = useState('')
+  const [location,  setLocation]  = useState('')
+  const [services,  setServices]  = useState<string[]>([])
+  const [branding,  setBranding]  = useState('')
+  const [budget,    setBudget]    = useState('')
   const [busy,  setBusy]  = useState(false)
   const [err,   setErr]   = useState('')
+
+  const toggleService = (s: string) =>
+    setServices(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
 
   // Auto-detect on mount
   useEffect(() => { setTz(detectTz()) }, [])
@@ -115,15 +144,35 @@ export default function BookingCalendar() {
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (!picked || !slot) return
+    // All intake questions are required (website + notes optional).
+    if (services.length === 0) { setErr('Please select at least one service you need.'); return }
     setBusy(true); setErr('')
     try {
       await createAppointment({
         client_name:      name.trim(),
         client_email:     email.trim(),
-        client_phone:     '',
+        client_phone:     phone.trim(),
         appointment_date: slotToUTC(picked, slot).toISOString(),
         notes:            notes.trim() || undefined,
       })
+      // Save the Step 1 + Step 2 answers as a finalized lead. Non-blocking:
+      // the booking already succeeded, so a lead-save hiccup must not error out.
+      try {
+        await finalizeIntake({
+          company_name:        company.trim(),
+          website_url:         website.trim() || null,
+          target_audience:     audience.trim() || null,
+          customer_location:   location || null,
+          services,
+          has_branding_assets: branding || null,
+          ad_budget:           budget || null,
+          design_archetype:    'N/A',
+          budget_alignment:    null,
+          email:               email.trim() || null,
+          phone:               phone.trim() || null,
+          status:              'finalized',
+        }, null)
+      } catch { /* lead-capture is best-effort */ }
       setStep('success')
     } catch (e) { setErr(e instanceof Error ? e.message : 'Something went wrong') }
     finally { setBusy(false) }
@@ -131,7 +180,9 @@ export default function BookingCalendar() {
 
   const reset = () => {
     setStep('calendar'); setPicked(null); setSlot(null)
-    setName(''); setEmail(''); setNotes('')
+    setName(''); setEmail(''); setPhone(''); setNotes('')
+    setCompany(''); setWebsite(''); setAudience(''); setLocation('')
+    setServices([]); setBranding(''); setBudget('')
   }
 
   // ── Success ────────────────────────────────────────────────────────────────
@@ -188,6 +239,85 @@ export default function BookingCalendar() {
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+              Phone <span className="font-normal text-neutral-400">(optional)</span>
+            </label>
+            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+              placeholder="(808) 555-0123" className={inputCls} />
+          </div>
+
+          <div className="border-t border-neutral-200 pt-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
+              A few quick questions
+            </p>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-neutral-700">Company Name</label>
+            <input required value={company} onChange={e => setCompany(e.target.value)}
+              placeholder="Your company" className={inputCls} />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+              Current Website URL <span className="font-normal text-neutral-400">(optional)</span>
+            </label>
+            <input value={website} onChange={e => setWebsite(e.target.value)}
+              placeholder="https://" className={inputCls} />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+              Target Audience / Ideal Customer
+            </label>
+            <textarea required value={audience} onChange={e => setAudience(e.target.value)} rows={2}
+              placeholder="Who are you trying to reach?" className={`${inputCls} resize-none`} />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+              Where are your primary customers located?
+            </label>
+            <div className="space-y-1.5">
+              {LOCATION_OPTIONS.map(opt => (
+                <label key={opt} className="flex items-center gap-2.5 text-sm text-neutral-700">
+                  <input type="radio" name="location" value={opt} required
+                    checked={location === opt} onChange={() => setLocation(opt)}
+                    className="h-4 w-4 accent-black" />
+                  {opt}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+              Which services do you need?
+            </label>
+            <div className="space-y-1.5">
+              {SERVICE_OPTIONS.map(opt => (
+                <label key={opt} className="flex items-center gap-2.5 text-sm text-neutral-700">
+                  <input type="checkbox" checked={services.includes(opt)}
+                    onChange={() => toggleService(opt)} className="h-4 w-4 accent-black" />
+                  {opt}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+              Do you have branding assets, logos, and product photos ready?
+            </label>
+            <div className="space-y-1.5">
+              {BRANDING_OPTIONS.map(opt => (
+                <label key={opt} className="flex items-center gap-2.5 text-sm text-neutral-700">
+                  <input type="radio" name="branding" value={opt} required
+                    checked={branding === opt} onChange={() => setBranding(opt)}
+                    className="h-4 w-4 accent-black" />
+                  {opt}
+                </label>
+              ))}
+            </div>
+          </div>
+          {/* Estimated Monthly Marketing Investment — hidden for now */}
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-neutral-700">
               About your project <span className="font-normal text-neutral-400">(optional)</span>
             </label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
@@ -219,18 +349,6 @@ export default function BookingCalendar() {
           Free 30-minute call. We'll learn about your goals and show you exactly how
           we can help — no pressure, no sales pitch.
         </p>
-        <Link
-          to="/intake"
-          className="mt-5 flex items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 transition-colors hover:border-black"
-        >
-          <span>
-            <span className="block text-sm font-semibold text-black">New here?</span>
-            <span className="mt-0.5 block text-xs text-neutral-500">
-              Take our 2-minute questionnaire first.
-            </span>
-          </span>
-          <span className="shrink-0 text-neutral-400">→</span>
-        </Link>
         <div className="mt-auto space-y-3 pt-8 text-sm text-neutral-500">
           <div className="flex items-center gap-2.5">
             <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

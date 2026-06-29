@@ -83,7 +83,7 @@ export const SERVICE_DETAILS: ServiceDetail[] = [
       'How we build Meta and Google campaigns that generate qualified leads instead of burning budget.',
     stepsLayout: 'arrow',
     cardImage: '/images/services/cards/Digital_marketing/Digital_Advertising_Card.jpg',
-    // heroImage: '/images/services/digital-advertising/hero.jpg',
+    heroImage: '/images/services/Digital_Advertising/Digital_Advertising_Hero.jpg',
     steps: [
       {
         title: 'Audience Research',
@@ -155,7 +155,7 @@ export const SERVICE_DETAILS: ServiceDetail[] = [
     intro: 'We turn your data into decisions — and decisions into growth.',
     stepsLayout: 'arrow',
     cardImage: '/images/services/cards/Analytics/Analytics_Strategy_Card.jpg',
-    heroImage: '/images/services/Analytics_Strategy/Step_1_Audit.jpg',
+    heroImage: '/images/services/Analytics_Strategy/Analytics_Strategy_Hero.jpg',
     steps: [
       {
         title: 'Audit',

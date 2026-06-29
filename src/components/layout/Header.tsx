@@ -5,7 +5,7 @@ import Container from '../common/Container'
 
 const NAV = [
   { label: 'Services', hash: '#services' },
-  { label: 'Work', hash: '#work' },
+  // { label: 'Work', hash: '#work' },  // hidden until we have real client work to show
   { label: 'About', hash: '#about' },
   { label: 'FAQ', hash: '#faq' },
   { label: 'Contact', hash: '#contact' },

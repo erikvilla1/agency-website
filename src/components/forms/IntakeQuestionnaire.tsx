@@ -29,7 +29,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PHONE_RE = /^[\d\s()+\-.]{7,}$/
 
 // Service keys are the single source of truth used by the pricing engine.
-const SERVICE_SHOPIFY = 'Shopify E-Commerce'
+const SERVICE_SHOPIFY = 'E-Commerce Store'
 const SERVICE_WEB = 'Web Design & Maintenance'
 const SERVICE_META = 'Meta (FB/IG) Ad Campaigns'
 const SERVICE_CONTENT = 'Content Creation & Brand Photography'
