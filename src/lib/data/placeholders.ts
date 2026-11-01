@@ -27,8 +27,8 @@ export const TEAM: TeamMember[] = [
   {
     id: '2',
     name: 'Kai Saucedo',
-    role: 'Digital Marketing Specialist',
-    bio: 'Based out of Waimanalo, Hawai\'i, Kai holds a Bachelor\'s in Mechancial Engineering from UC San Diego and brings a data-driven, systems thinking approach to digital marketing. He has independently grown brands to 1M+ monthly views and 2M+ streams across platforms, earned a feature on EDM.com, and built audiences through organizing short form content on Instagram and TikTok. At \'Iwa Media, he leads paid ad strategy, content creation, and campaign optimization to generate real results for local businesses.',
+    role: 'Software Developer & Digital Marketer',
+    bio: 'Based out of Waimanalo, Hawai\'i, Kai holds a Bachelor\'s in Mechanical Engineering from UC San Diego and works both sides of growth: the software and the marketing. He builds full-stack web apps and automated client workflows, including a lead-to-loan platform for a commercial lending firm with client dashboards, document uploads, e-signatures, and AI-driven workflows. On the marketing side, he has grown brands to 1M+ monthly views and 2M+ streams and earned a feature on EDM.com. At \'Iwa Media, he builds the websites and systems, then runs the paid ads that bring customers to them.',
     image_url: '/images/team/Kai-Saucedo.jpg',
     order: 2,
   },
